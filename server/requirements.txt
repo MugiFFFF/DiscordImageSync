@@ -1,0 +1,11 @@
+# Discord BOT
+discord.py>=2.3.0
+
+# WebSocket Server
+websockets>=12.0
+
+# Environment Variables
+python-dotenv>=1.0.0
+
+# Async HTTP (required by discord.py)
+aiohttp>=3.9.0

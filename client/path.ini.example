@@ -1,0 +1,10 @@
+# 設定ファイルパスの指定
+# このファイルをコピーして path.ini として使用し、
+# 個人情報を含む config.ini を別の場所に配置できます
+
+[Path]
+# config.ini のパス（相対パスまたは絶対パス）
+# 相対パスの場合は client ディレクトリからの相対パス
+# 例: ../private/config.ini
+# 例: D:/secure/discord-sync/config.ini
+config_file = ../private/config.ini

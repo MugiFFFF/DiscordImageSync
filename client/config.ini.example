@@ -1,6 +1,10 @@
 # DiscordImageSync クライアント設定ファイル
 # このファイルをコピーして config.ini として使用してください
 
+[General]
+# ログ言語設定 (ja: 日本語, en: english)
+language = ja
+
 [Server]
 # WebSocketサーバーのURL
 websocket_url = ws://localhost:8765

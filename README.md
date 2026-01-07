@@ -1,5 +1,7 @@
 # DiscordImageSync
 
+注意：まだ動きません
+
 Discordをシグナリングおよびデータストレージとして利用し、特定ユーザー間で画像ファイルを構造ごと同期するシステムです。
 
 ## [Server](./server/README.md)

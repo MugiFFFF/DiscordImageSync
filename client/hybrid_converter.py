@@ -1,5 +1,5 @@
 """
-ISH-Hybrid形式変換モジュール
+Hybrid形式変換モジュール
 画像ファイルを200バイト固定長ヘッダーとバイナリ部に分割し、
 Discord上での画像プレビューを抑制する.dat形式に変換する
 """
@@ -10,10 +10,10 @@ from logger import get_logger
 
 
 # 定数
-ISH_HEADER_SIZE = 200  # 固定長ヘッダーサイズ（バイト）
+HYBRID_HEADER_SIZE = 200  # 固定長ヘッダーサイズ（バイト）
 MAX_FILE_SIZE_MB = 10  # 最大ファイルサイズ（MB）
 SIZE_MARGIN = 1.02  # サイズマージン（2%）
-MIN_FILE_SIZE = ISH_HEADER_SIZE  # 最小ファイルサイズ（200バイト）
+MIN_FILE_SIZE = HYBRID_HEADER_SIZE  # 最小ファイルサイズ（200バイト）
 
 
 def calculate_sha256(file_path):
@@ -69,9 +69,9 @@ def validate_file_size(file_path):
         return False, f"ファイルサイズ取得エラー: {e}"
 
 
-def create_ish_header(sha256_hash, relative_path, original_size):
+def create_hybrid_header(sha256_hash, relative_path, original_size):
     """
-    200バイト固定長のISHヘッダーを生成
+    200バイト固定長のHybridヘッダーを生成
     
     Args:
         sha256_hash (str): SHA-256ハッシュ（64文字）
@@ -85,32 +85,32 @@ def create_ish_header(sha256_hash, relative_path, original_size):
     
     # ヘッダー内容を構築
     header_lines = [
-        "ISH-HEADER-V1",
+        "HYBRID-HEADER-V1",
         f"SHA256:{sha256_hash}",
         f"Path:{relative_path}",
         f"Size:{original_size}",
         f"Time:{timestamp}",
-        f"Offset:{ISH_HEADER_SIZE}"
+        f"Offset:{HYBRID_HEADER_SIZE}"
     ]
     
     header_text = "\n".join(header_lines)
     header_bytes = header_text.encode('utf-8')
     
     # 200バイトを超える場合はエラー
-    if len(header_bytes) >= ISH_HEADER_SIZE:
-        raise ValueError(f"ヘッダーサイズが{ISH_HEADER_SIZE}バイトを超えました: {len(header_bytes)}バイト")
+    if len(header_bytes) >= HYBRID_HEADER_SIZE:
+        raise ValueError(f"ヘッダーサイズが{HYBRID_HEADER_SIZE}バイトを超えました: {len(header_bytes)}バイト")
     
     # 200バイトに満たない場合は null文字でパディング
     # （実際には200バイト未満になることはほぼないが、安全のため）
-    padding_size = ISH_HEADER_SIZE - len(header_bytes)
+    padding_size = HYBRID_HEADER_SIZE - len(header_bytes)
     header_bytes += b'\x00' * padding_size
     
     return header_bytes
 
 
-def convert_to_ish_hybrid(input_file, output_file, root_dir=None):
+def convert_to_hybrid(input_file, output_file, root_dir=None):
     """
-    画像ファイルをISH-Hybrid形式(.dat)に変換
+    画像ファイルをHybrid形式(.dat)に変換
     
     Args:
         input_file (str): 入力画像ファイルのパス
@@ -149,11 +149,11 @@ def convert_to_ish_hybrid(input_file, output_file, root_dir=None):
         # ファイルサイズ取得
         original_size = os.path.getsize(input_file)
         
-        # ISHヘッダー生成
+        # Hybridヘッダー生成
         try:
-            header_bytes = create_ish_header(sha256_hash, relative_path, original_size)
+            header_bytes = create_hybrid_header(sha256_hash, relative_path, original_size)
         except Exception as e:
-            logger.log_exception(e, input_file, "ISHヘッダー生成失敗")
+            logger.log_exception(e, input_file, "Hybridヘッダー生成失敗")
             return False
         
         # バイナリデータ読み込み
@@ -164,7 +164,7 @@ def convert_to_ish_hybrid(input_file, output_file, root_dir=None):
             logger.log_exception(e, input_file, "ファイル読み込み失敗")
             return False
         
-        # ISH-Hybrid形式で書き込み（ヘッダー + バイナリ）
+        # Hybrid形式で書き込み（ヘッダー + バイナリ）
         try:
             # 出力ディレクトリが存在しない場合は作成
             output_dir = os.path.dirname(output_file)
@@ -181,13 +181,13 @@ def convert_to_ish_hybrid(input_file, output_file, root_dir=None):
         return True
         
     except Exception as e:
-        logger.log_exception(e, input_file, "ISH-Hybrid変換中の予期しないエラー")
+        logger.log_exception(e, input_file, "Hybrid変換中の予期しないエラー")
         return False
 
 
-def parse_ish_header(dat_file):
+def parse_hybrid_header(dat_file):
     """
-    .datファイルからISHヘッダーを解析
+    .datファイルからHybridヘッダーを解析
     
     Args:
         dat_file (str): .datファイルのパス
@@ -200,9 +200,9 @@ def parse_ish_header(dat_file):
     try:
         with open(dat_file, 'rb') as f:
             # 200バイトのヘッダー部を読み込み
-            header_bytes = f.read(ISH_HEADER_SIZE)
+            header_bytes = f.read(HYBRID_HEADER_SIZE)
             
-            if len(header_bytes) < ISH_HEADER_SIZE:
+            if len(header_bytes) < HYBRID_HEADER_SIZE:
                 logger.log_error("ヘッダーサイズが不正です", dat_file)
                 return None
             
@@ -219,11 +219,11 @@ def parse_ish_header(dat_file):
             return header_info
             
     except Exception as e:
-        logger.log_exception(e, dat_file, "ISHヘッダー解析失敗")
+        logger.log_exception(e, dat_file, "Hybridヘッダー解析失敗")
         return None
 
 
-def extract_binary_from_ish(dat_file, output_file):
+def extract_binary_from_hybrid(dat_file, output_file):
     """
     .datファイルからバイナリ部を抽出して元の画像ファイルに復元
     
@@ -238,14 +238,14 @@ def extract_binary_from_ish(dat_file, output_file):
     
     try:
         # ヘッダー解析
-        header_info = parse_ish_header(dat_file)
+        header_info = parse_hybrid_header(dat_file)
         if not header_info:
             return False
         
         # バイナリ部を読み込み
         with open(dat_file, 'rb') as f:
             # ヘッダー部をスキップ
-            f.seek(ISH_HEADER_SIZE)
+            f.seek(HYBRID_HEADER_SIZE)
             binary_data = f.read()
         
         # SHA-256検証

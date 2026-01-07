@@ -8,7 +8,7 @@ Discord BOTサーバー実装。WebSocketサーバーとして動作し、複数
 
 - Discord BOTとしてチャンネルを監視
 - WebSocketサーバーとしてクライアントと双方向通信
-- ISH-Hybrid形式のファイルをDiscordへアップロード
+- Hybrid形式のファイルをDiscordへアップロード
 - 受信したファイルを各クライアントへ配信
 
 ## 技術スタック

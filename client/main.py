@@ -5,7 +5,7 @@ DiscordImageSync クライアント
 import sys
 import os
 from config_loader import load_config, ConfigValidationError
-from ish_converter import convert_to_ish_hybrid
+from hybrid_converter import convert_to_hybrid
 from logger import get_logger
 
 
@@ -66,7 +66,7 @@ def display_config(config):
 
 def process_images(config):
     """
-    client/images内の画像ファイルをISH-Hybrid形式に変換してclient/images/outに出力
+    client/images内の画像ファイルをHybrid形式に変換してclient/images/outに出力
     
     Args:
         config: 設定オブジェクト
@@ -118,7 +118,7 @@ def process_images(config):
             
             # 変換処理
             print(f"🔄 変換中: {rel_path}")
-            success = convert_to_ish_hybrid(input_file, output_file, images_dir)
+            success = convert_to_hybrid(input_file, output_file, images_dir)
             
             if success:
                 stats["success"] += 1

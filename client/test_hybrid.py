@@ -1,13 +1,13 @@
 """
-ISH-Hybrid形式 動作確認スクリプト
+Hybrid形式 動作確認スクリプト
 .datファイルのヘッダー解析、SHA-256検証、バイナリ抽出をテスト
 """
 import os
 import sys
-from ish_converter import parse_ish_header, extract_binary_from_ish
+from hybrid_converter import parse_hybrid_header, extract_binary_from_hybrid
 
 
-def test_ish_file(dat_file):
+def test_hybrid_file(dat_file):
     """
     .datファイルのテスト
     
@@ -32,7 +32,7 @@ def test_ish_file(dat_file):
     # 1. ヘッダー解析テスト
     print("🔍 ステップ1: ヘッダー解析")
     print("-" * 70)
-    header_info = parse_ish_header(dat_file)
+    header_info = parse_hybrid_header(dat_file)
     
     if not header_info:
         print("❌ ヘッダー解析に失敗しました")
@@ -54,7 +54,7 @@ def test_ish_file(dat_file):
     test_output_file = os.path.join(test_output_dir, os.path.basename(original_path))
     
     # バイナリ抽出
-    success = extract_binary_from_ish(dat_file, test_output_file)
+    success = extract_binary_from_hybrid(dat_file, test_output_file)
     
     if success:
         print(f"✅ バイナリ抽出成功")
@@ -103,7 +103,7 @@ def test_all_dat_files(directory):
     
     success_count = 0
     for dat_file in dat_files:
-        if test_ish_file(dat_file):
+        if test_hybrid_file(dat_file):
             success_count += 1
         print()
     
@@ -129,7 +129,7 @@ def main():
         
         if os.path.isfile(target):
             # 単一ファイルのテスト
-            test_ish_file(target)
+            test_hybrid_file(target)
         elif os.path.isdir(target):
             # ディレクトリ内のすべてのファイルをテスト
             test_all_dat_files(target)

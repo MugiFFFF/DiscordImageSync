@@ -37,6 +37,8 @@ server/*.log
 # Client specific
 client/.shadow/
 client/temp/
+client/images/
+client/error.log
 
 # Discord Bot
 bot_token.txt

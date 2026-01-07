@@ -3,7 +3,10 @@ DiscordImageSync クライアント
 メインエントリポイント
 """
 import sys
+import os
 from config_loader import load_config, ConfigValidationError
+from ish_converter import convert_to_ish_hybrid
+from logger import get_logger
 
 
 def display_config(config):
@@ -61,6 +64,72 @@ def display_config(config):
     print("=" * 70)
 
 
+def process_images(config):
+    """
+    client/images内の画像ファイルをISH-Hybrid形式に変換してclient/images/outに出力
+    
+    Args:
+        config: 設定オブジェクト
+    
+    Returns:
+        dict: 処理結果の統計情報
+    """
+    logger = get_logger()
+    
+    # ディレクトリパス設定
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    images_dir = os.path.join(script_dir, "images")
+    output_dir = os.path.join(images_dir, "out")
+    
+    # 統計情報
+    stats = {
+        "total": 0,
+        "success": 0,
+        "failed": 0,
+        "skipped": 0
+    }
+    
+    # imagesディレクトリが存在しない場合
+    if not os.path.exists(images_dir):
+        print(f"⚠️  {images_dir} が存在しません")
+        return stats
+    
+    # 画像ファイルを検索
+    for root, dirs, files in os.walk(images_dir):
+        # outディレクトリは除外
+        if "out" in dirs:
+            dirs.remove("out")
+        
+        for filename in files:
+            # 拡張子チェック
+            _, ext = os.path.splitext(filename)
+            if ext.lower() not in config.supported_extensions:
+                continue
+            
+            stats["total"] += 1
+            
+            # 入力ファイルパス
+            input_file = os.path.join(root, filename)
+            
+            # 出力ファイルパス（相対パス構造を維持）
+            rel_path = os.path.relpath(input_file, images_dir)
+            output_basename = os.path.splitext(rel_path)[0] + config.data_file_extension
+            output_file = os.path.join(output_dir, output_basename)
+            
+            # 変換処理
+            print(f"🔄 変換中: {rel_path}")
+            success = convert_to_ish_hybrid(input_file, output_file, images_dir)
+            
+            if success:
+                stats["success"] += 1
+                print(f"   ✅ 成功: {output_basename}")
+            else:
+                stats["failed"] += 1
+                print(f"   ❌ 失敗: {rel_path}")
+    
+    return stats
+
+
 def main():
     """メイン処理"""
     try:
@@ -73,8 +142,27 @@ def main():
         # 設定内容の表示
         display_config(config)
         
-        # TODO: ここに実際の同期処理を追加
-        print("ℹ️  現在はテストモードです。同期処理は未実装です。")
+        # 画像ファイル変換処理
+        print("\n" + "=" * 70)
+        print("🖼️  画像ファイル変換処理を開始します")
+        print("=" * 70)
+        print()
+        
+        stats = process_images(config)
+        
+        # 処理結果サマリー
+        print()
+        print("=" * 70)
+        print("📊 処理結果サマリー")
+        print("=" * 70)
+        print(f"   総ファイル数: {stats['total']}")
+        print(f"   成功: {stats['success']}")
+        print(f"   失敗: {stats['failed']}")
+        print(f"   スキップ: {stats['skipped']}")
+        print("=" * 70)
+        
+        if stats['failed'] > 0:
+            print("\n⚠️  エラーの詳細は error.log を確認してください")
         
     except ConfigValidationError as e:
         print("❌ 設定エラー:", str(e), file=sys.stderr)
